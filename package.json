@@ -1,0 +1,9 @@
+{
+	"name": "seedrandom",
+	"version": "0.1.0",
+	"description": "Wrapper for seedrandom, which replaces Math.random with a version that can be seeded.  Provides uid generation as well.",
+	"author": "Liam Doherty",
+	"main": "random",
+	"dependencies" : {
+	}
+}
