@@ -1,14 +1,13 @@
 
-var makeUid;
+//var makeUid;
 
-(function(){
+//(function(){
+exports.module = module
 
 var random;
 
-if(typeof(exports) !== 'undefined'){
-	require('./seedrandom/seedrandom');
-}else{
-}
+require('./../seedrandom/seedrandom');
+
 random = function(){return Math.floor(Math.random()*2147483648);}
 
 var base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=";
@@ -39,7 +38,7 @@ function randomBase64(manyChars){
 }
 
 
-makeUid = function(){
+function makeUid(){
 	//22 characters make up the UID (132 bits, we want 128 but with base 64 that as close as we can get.)
 	//these are derived from encoding 4 random 32 bit ints
 	
@@ -91,7 +90,7 @@ function randomAlpha(many, chars){
 	}
 	return result;
 }
-
+/*
 if(typeof(exports) !== 'undefined'){
 	exports.make = makeUid;
 
@@ -102,4 +101,9 @@ if(typeof(exports) !== 'undefined'){
 
 })();
 
+*/
+
+exports.uid = makeUid
+exports.alpha = randomAlpha
+exports.base64 = randomBase64
 
