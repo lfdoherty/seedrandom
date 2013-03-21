@@ -1,7 +1,4 @@
 
-//var makeUid;
-
-//(function(){
 exports.module = module
 
 var random;
@@ -90,18 +87,7 @@ function randomAlpha(many, chars){
 	}
 	return result;
 }
-/*
-if(typeof(exports) !== 'undefined'){
-	exports.make = makeUid;
 
-	exports.uid = makeUid;
-	exports.alpha = randomAlpha;
-	exports.base64 = randomBase64;
-}
-
-})();
-
-*/
 
 exports.uid = makeUid
 exports.alpha = randomAlpha

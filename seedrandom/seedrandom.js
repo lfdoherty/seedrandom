@@ -98,6 +98,9 @@
  * @param {number=} overflow 
  * @param {number=} startdenom
  */
+
+ exports.module = module;
+ 
 (function (pool, math, width, chunks, significance, overflow, startdenom) {
 
 
@@ -270,3 +273,4 @@ mixkey(math.random(), pool);
   6,    // chunks: at least six RC4 outputs for each double
   52    // significance: there are 52 significant digits in a double
 );
+
