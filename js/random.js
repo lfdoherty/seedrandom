@@ -3,12 +3,15 @@ exports.module = module
 
 var random;
 var randomByte;
+var randomTwoBytes;
 
 require('./../seedrandom/seedrandom');
 
 random = function(){return Math.floor(Math.random()*2147483648);}
 
 randomByte = function(){return Math.floor(Math.random()*256);}
+randomTwoBytes = function(){return Math.floor(Math.random()*65536);}
+
 
 var base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=";
 
@@ -152,18 +155,20 @@ function convertBufferUuidToBase64(buf){
 	}
 	return str
 }
-/*
+
 function test(){
 	function testRoundtrip(uuidStr){
 		var buf = convertBase64UuidToBuffer(uuidStr)
 		var resUuid = convertBufferUuidToBase64(buf)
-		if(resUuid !== uuidStr){
+		var stringRep = uuidBufferToString(buf)
+		var otherResUuid = convertBufferUuidToBase64(uuidStringToBuffer(stringRep))
+		if(resUuid !== uuidStr || otherResUuid !== uuidStr){
 			console.log('buf: ')
 			for(var i=0;i<buf.length;++i){
 				var b = buf[i]
 				console.log(b)
 			}
-			throw new Error('unit test of base64 conversions fails: ' + uuidStr + ' -> ' + resUuid)
+			throw new Error('unit test of base64 conversions fails: ' + uuidStr + ' -> ' + resUuid + ' | ' + otherResUuid + ' ' + stringRep)
 		}
 	}
 	testRoundtrip('BBBBBBBBBBBBBBBBBBBBBB')
@@ -173,22 +178,84 @@ function test(){
 		testRoundtrip(convertBufferUuidToBase64(makeUidByteArray()))
 	}
 }
-test()*/
+test()
 
 function makeUid(){
-	return convertBufferUuidToBase64(makeUidByteArray())
+	//return convertBufferUuidToBase64(makeUidByteArray())
+	return String.fromCharCode(
+		randomTwoBytes(),
+		randomTwoBytes(),
+		
+		randomTwoBytes(),
+		randomTwoBytes(),
+		
+		randomTwoBytes(),
+		randomTwoBytes(),
+		
+		randomTwoBytes(),
+		randomTwoBytes()
+	)
 }
 
-function uuidStringToBuffer(str){
+function uuidBase64StringToBuffer(str){
 	if(str.length !== 22) throw new Error('invalid uuid string: ' + str)
 	var buf = convertBase64UuidToBuffer(str)
 	return buf
 }
 
-function uuidBufferToString(buf){
+function uuidBufferToBase64(buf){
 	return convertBufferUuidToBase64(buf)
 }
 
+function uuidStringToBuffer(str){
+	var buf = new Buffer(16)
+	var i=0
+	for(var ci=0;ci<8;++ci){
+		var c = str.charCodeAt(ci)
+		buf[i++] = c & 0xFF
+		buf[i++] = (c>>8) & 0xFF
+	}
+	return buf
+}
+function uuidBufferToString(buf){
+	return String.fromCharCode(
+		buf[0]|(buf[1]<<8),
+		buf[2]|(buf[3]<<8),
+		buf[4]|(buf[5]<<8),
+		buf[6]|(buf[7]<<8),
+		buf[8]|(buf[9]<<8),
+		buf[10]|(buf[11]<<8),
+		buf[12]|(buf[13]<<8),
+		buf[14]|(buf[15]<<8))
+}
+function uuidBufferSliceToString(buf, off){
+	return String.fromCharCode(
+		buf[off]|(buf[off+1]<<8),
+		buf[off+2]|(buf[off+3]<<8),
+		buf[off+4]|(buf[off+5]<<8),
+		buf[off+6]|(buf[off+7]<<8),
+		buf[off+8]|(buf[off+9]<<8),
+		buf[off+10]|(buf[off+11]<<8),
+		buf[off+12]|(buf[off+13]<<8),
+		buf[off+14]|(buf[off+15]<<8))
+}
+
+function uuidBase64ToString(base64Str){
+	return uuidBufferToString(uuidBase64StringToBuffer(base64Str))
+}
+
+function uuidStringToBase64(str){
+	return uuidBufferToBase64(uuidStringToBuffer(str))
+}
+
+function writeUuidToBuffer(uuid, buf, off){
+	var i=off
+	for(var ci=0;ci<8;++ci){
+		var c = uuid.charCodeAt(ci)
+		buf[(i++)] = c & 0xFF
+		buf[(i++)] = (c>>8) & 0xFF
+	}
+}
 /*
 function makeUid(){
 	//22 characters make up the UID (132 bits, we want 128 but with base 64 that as close as we can get.)
@@ -243,10 +310,15 @@ function randomAlpha(many, chars){
 	return result;
 }
 
-exports.uuidBufferToString = uuidBufferToString
+exports.uuidBufferToBase64 = uuidBufferToBase64
 exports.uuidStringToBuffer = uuidStringToBuffer
+exports.uuidBufferSliceToString = uuidBufferSliceToString
+exports.uuidBufferToString = uuidBufferToString
+exports.uuidBase64ToString = uuidBase64ToString
+exports.uuidStringToBase64 = uuidStringToBase64
 exports.uid = makeUid
-exports.uidBuffer = makeUidBuffer
+exports.writeUuidToBuffer = writeUuidToBuffer
+//exports.uidBuffer = makeUidBuffer
 exports.alpha = randomAlpha
 exports.base64 = randomBase64
 
