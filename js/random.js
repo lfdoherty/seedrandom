@@ -117,6 +117,53 @@ function convertBase64UuidToBuffer(uuidStr){
 	return buf
 }
 
+
+function convertStringUuidToBase64(uuidStr){
+	var str = ''
+	var buf = []
+	for(var i=0;i<8;++i){
+		var c = uuidStr.charCodeAt(i)
+		buf.push(c & 0xFF)
+		buf.push((c>>8) & 0xFF)
+	}
+	for(var i=0;i<16;i+=3){
+		var b1 = buf[i]
+		var b2 = buf[i+1]
+		var b3 = buf[i+2]
+
+		var n1, n2, n3, n4
+		n1 = b1 & 0x3F//take 6 bits
+		n2 = (b1 >> 6) & 0x03//take the other 2 bits
+
+		if(i === 15){
+			str += base64Chars[n1]
+			str += base64Chars[n2]
+			//console.log(JSON.stringify([b1, n1, n2]))
+			//console.log(uuidStr + ' -> ' + str)
+			return str
+		}
+		
+		n2 += (b2 & 0x0F) << 2//take 4 more bits
+		n3 = (b2 >> 4) & 0x0F//take the other 4 bits
+		n3 += (b3 & 0x03) << 4//take 2 more bits
+		n4 = (b3 >> 2) & 0x3F//take 6 more bits
+
+		//console.log(JSON.stringify([i,n1,n2,n3,n4,b1,b2,b3,'b',(b2 >> 4) & 0x0F,(b3 & 0x03) << 4]))
+		
+		if(i === 15){
+			str += base64Chars[n1]
+			str += base64Chars[n2]
+		}else{
+		
+			str += base64Chars[n1]
+			str += base64Chars[n2]
+			str += base64Chars[n3]
+			str += base64Chars[n4]
+		}
+	}
+	return str
+}
+
 function convertBufferUuidToBase64(buf){
 	var str = ''
 	for(var i=0;i<16;i+=3){
@@ -155,7 +202,7 @@ function convertBufferUuidToBase64(buf){
 	}
 	return str
 }
-
+/*
 function test(){
 	function testRoundtrip(uuidStr){
 		var buf = convertBase64UuidToBuffer(uuidStr)
@@ -178,7 +225,7 @@ function test(){
 		testRoundtrip(convertBufferUuidToBase64(makeUidByteArray()))
 	}
 }
-test()
+test()*/
 
 function makeUid(){
 	//return convertBufferUuidToBase64(makeUidByteArray())
@@ -239,14 +286,58 @@ function uuidBufferSliceToString(buf, off){
 		buf[off+12]|(buf[off+13]<<8),
 		buf[off+14]|(buf[off+15]<<8))
 }
-
+/*
 function uuidBase64ToString(base64Str){
-	return uuidBufferToString(uuidBase64StringToBuffer(base64Str))
+	var res = uuidBufferToString(uuidBase64StringToBuffer(base64Str))
+	console.log(base64Str + ' -> ' + res)
+	return res
+}*/
+
+
+function uuidBase64ToString(uuidStr){
+	//return uuidBufferToString(uuidBase64StringToBuffer(base64Str))
+	var buf = []//new Buffer(16)
+	var bi = 0
+	for(var i=0;i<uuidStr.length;i+=4){
+	
+		if(i === 20){//only 2 more chars
+			var n1 = charToByte[uuidStr[i]]
+			var n2 = charToByte[uuidStr[i+1]]
+			buf[bi] = n1//take 6 bits
+			buf[bi] += (n2 & 0x03) << 6//take 2 bits
+		}else{
+	
+			var n1 = charToByte[uuidStr[i]]
+			var n2 = charToByte[uuidStr[i+1]]
+			var n3 = charToByte[uuidStr[i+2]]
+			var n4 = charToByte[uuidStr[i+3]]
+		
+			//console.log(n1 + ' ' + n2 + ' ' + n3 + ' ' + n4)
+		
+			buf[bi] = n1//take 6 bits
+			buf[bi] += (n2 & 0x03) << 6//take 2 bits
+			++bi
+			buf[bi] = (n2 >> 2) & 0x0F//take 4 bits
+			//console.log('intermediate1: ' + buf[bi] + ' (' + ((n2 & 0x03)) + ')')
+			buf[bi] += (n3 & 0x0F) << 4//take 4 bits
+			++bi
+			buf[bi] = (n3 >> 4) & 0x03//take 2 bits
+			//console.log('intermediate2: ' + buf[bi] + ' ' + n4)
+			buf[bi] += (n4 & 0x3F) << 2//take 6 bits
+			//console.log('intermediate3: ' + buf[bi])
+			++bi
+		}
+	}
+	return uuidBufferToString(buf)
 }
 
 function uuidStringToBase64(str){
-	return uuidBufferToBase64(uuidStringToBuffer(str))
+	return convertStringUuidToBase64(str)
 }
+/*
+function uuidStringToBase64(str){
+	return uuidBufferToBase64(uuidStringToBuffer(str))
+}*/
 
 function writeUuidToBuffer(uuid, buf, off){
 	var i=off
