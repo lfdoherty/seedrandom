@@ -244,6 +244,9 @@ function makeUid(){
 	)
 }
 
+function makeUidBase64(){
+	return uuidStringToBase64(makeUid())
+}
 function uuidBase64StringToBuffer(str){
 	if(str.length !== 22) throw new Error('invalid uuid string: ' + str)
 	var buf = convertBase64UuidToBuffer(str)
@@ -340,6 +343,7 @@ function uuidStringToBase64(str){
 }*/
 
 function writeUuidToBuffer(uuid, buf, off){
+	if(uuid.length !== 8) throw new Error('UUID has wrong length: ' + uuid.length + ' ' + uuid)
 	var i=off
 	for(var ci=0;ci<8;++ci){
 		var c = uuid.charCodeAt(ci)
@@ -408,6 +412,7 @@ exports.uuidBufferToString = uuidBufferToString
 exports.uuidBase64ToString = uuidBase64ToString
 exports.uuidStringToBase64 = uuidStringToBase64
 exports.uid = makeUid
+exports.uidBase64 = makeUidBase64
 exports.writeUuidToBuffer = writeUuidToBuffer
 //exports.uidBuffer = makeUidBuffer
 exports.alpha = randomAlpha
